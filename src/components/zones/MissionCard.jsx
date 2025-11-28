@@ -1,73 +1,111 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
-const MissionCard = ({ mission, zoneColor }) => {
+const MissionCard = ({ mission, zone }) => {
+  const statusColors = {
+    live: 'bg-green-100 text-green-800',
+    'coming-soon': 'bg-yellow-100 text-yellow-800',
+    locked: 'bg-gray-100 text-gray-800'
+  };
+
+  const statusLabels = {
+    live: '🎮 Play Now',
+    'coming-soon': '🔜 Coming Soon',
+    locked: '🔒 Locked'
+  };
+
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-gray-200">
-      {/* Mission Status Badge */}
-      <div className="relative">
-        <div className={`h-3 bg-gradient-to-r ${zoneColor}`}></div>
-        <div className="absolute top-0 right-4 transform translate-y-1">
-          <span className={`inline-block px-4 py-1 rounded-full text-sm font-bold text-white ${
-            mission.status === 'live' 
-              ? 'bg-green-500' 
-              : 'bg-yellow-500'
-          }`}>
-            {mission.status === 'live' ? '🎮 Live Now' : '⏰ Coming Soon'}
-          </span>
-        </div>
+    <div className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
+      {/* Mission Header */}
+      <div className={`bg-gradient-to-r ${zone.gradient} p-6 text-center text-white`}>
+        <div className="text-5xl mb-2">{zone.emoji}</div>
+        <h3 className="text-xl font-bold">{mission.title}</h3>
       </div>
 
+      {/* Mission Content */}
       <div className="p-6">
-        {/* Mission Title */}
-        <h3 className="text-2xl font-display font-bold text-gray-900 mb-3">
-          {mission.title}
-        </h3>
-
         {/* Description */}
-        <p className="text-gray-600 mb-4 leading-relaxed">
+        <p className="text-gray-700 mb-4 leading-relaxed">
           {mission.description}
         </p>
 
-        {/* Mission Details */}
-        <div className="flex flex-wrap gap-3 mb-4">
-          <div className="flex items-center text-sm text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
-            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-            </svg>
-            {mission.duration}
+        {/* Mission Info */}
+        <div className="space-y-2 mb-4">
+          {/* Duration & Key Stage */}
+          <div className="flex items-center justify-between text-sm">
+            <span className="flex items-center text-gray-600">
+              <span className="mr-2">⏱️</span>
+              {mission.duration}
+            </span>
+            <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full font-semibold">
+              {mission.keyStage}
+            </span>
           </div>
-          <div className="flex items-center text-sm text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
-            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
-            </svg>
-            {mission.keyStage}
+
+          {/* Status Badge */}
+          <div className="flex items-center justify-between">
+            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${statusColors[mission.status]}`}>
+              {statusLabels[mission.status]}
+            </span>
+            {mission.releaseDate && (
+              <span className="text-xs text-gray-500">
+                {new Date(mission.releaseDate).toLocaleDateString()}
+              </span>
+            )}
           </div>
         </div>
 
         {/* Skills */}
-        <div className="mb-4">
-          <p className="text-sm font-semibold text-gray-700 mb-2">Skills you'll learn:</p>
-          <div className="flex flex-wrap gap-2">
-            {mission.skills.map((skill, index) => (
-              <span
-                key={index}
-                className="text-xs bg-wl-teal/10 text-wl-teal px-3 py-1 rounded-full font-medium"
-              >
-                {skill}
-              </span>
-            ))}
+        {mission.skills && mission.skills.length > 0 && (
+          <div className="mb-4">
+            <p className="text-sm font-semibold text-gray-700 mb-2">Skills:</p>
+            <div className="flex flex-wrap gap-2">
+              {mission.skills.slice(0, 3).map((skill, index) => (
+                <span
+                  key={index}
+                  className="px-2 py-1 bg-teal-100 text-teal-800 rounded text-xs font-semibold"
+                >
+                  ⭐ {skill}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* CTA Button */}
-        {mission.status === 'live' ? (
-          <button className="w-full bg-gradient-to-r from-wl-purple to-wl-teal text-white font-bold py-3 px-6 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg">
-            🎮 Play Mission
-          </button>
-        ) : (
-          <div className="w-full bg-gray-100 text-gray-600 font-bold py-3 px-6 rounded-xl text-center">
-            Available {new Date(mission.releaseDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+        {/* Careers (NEW) */}
+        {mission.career_ids && mission.career_ids.length > 0 && (
+          <div className="mb-4">
+            <p className="text-sm font-semibold text-gray-700 mb-2">Careers:</p>
+            <div className="flex flex-wrap gap-2">
+              {mission.career_ids.slice(0, 2).map((careerId, index) => (
+                <span
+                  key={index}
+                  className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-semibold capitalize"
+                >
+                  💼 {careerId.replace('-', ' ')}
+                </span>
+              ))}
+            </div>
           </div>
+        )}
+
+        {/* Action Button */}
+        {mission.status === 'live' ? (
+          <Link to={`/missions/${zone.id}/${mission.id}/play`}>
+            <button
+              className={`w-full py-3 bg-gradient-to-r ${zone.gradient} text-white font-bold rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center space-x-2`}
+            >
+              <span>Play Mission</span>
+              <span>🎮</span>
+            </button>
+          </Link>
+        ) : (
+          <button
+            disabled
+            className="w-full py-3 bg-gray-300 text-gray-600 font-bold rounded-lg cursor-not-allowed"
+          >
+            {mission.status === 'coming-soon' ? '🔜 Coming Soon' : '🔒 Locked'}
+          </button>
         )}
       </div>
     </div>

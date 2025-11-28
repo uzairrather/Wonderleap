@@ -1,65 +1,73 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { getMissionsByZone } from '../../utils/zonesData';
 
 const ZoneCard = ({ zone }) => {
-  const liveMissions = zone.missions.filter(m => m.status === 'live').length;
-  const totalMissions = zone.missions.length;
+  // Get missions for this zone
+  const zoneMissions = getMissionsByZone(zone.id);
+  
+  // Count live missions
+  const liveMissionsCount = zoneMissions.filter(m => m.status === 'live').length;
+  const totalMissionsCount = zoneMissions.length;
 
   return (
-    <Link
-      to={`/zones/${zone.id}`}
-      className="group bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-4 border-gray-100"
-    >
-      {/* Zone Header */}
-      <div className={`bg-gradient-to-br ${zone.color} p-10 text-center relative overflow-hidden`}>
-        <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-500"></div>
-        
-        {/* Emoji */}
-        <div className="relative text-9xl mb-4 transform group-hover:scale-110 transition-transform duration-300">
-          {zone.emoji}
+    <Link to={`/zones/${zone.id}`}>
+      <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer hover:scale-105 transform">
+        {/* Zone Header with Gradient */}
+        <div className={`bg-gradient-to-r ${zone.gradient} p-8 text-center text-white`}>
+          <div className="text-6xl mb-3 animate-bounce-slow">{zone.emoji}</div>
+          <h3 className="text-2xl font-bold">{zone.name}</h3>
         </div>
-        
-        {/* Mission Count Badge */}
-        <div className="relative">
-          <span className="inline-block bg-white/20 backdrop-blur-sm rounded-full px-6 py-2 text-white font-bold text-lg">
-            {liveMissions}/{totalMissions} Missions Live
-          </span>
-        </div>
-      </div>
 
-      {/* Zone Content */}
-      <div className="p-8">
-        <h3 className="text-2xl font-display font-bold text-gray-900 mb-4 group-hover:text-wl-purple transition">
-          {zone.name}
-        </h3>
-        
-        <p className="text-gray-600 mb-6 leading-relaxed">
-          {zone.description}
-        </p>
+        {/* Zone Content */}
+        <div className="p-6">
+          {/* Description */}
+          <p className="text-gray-700 mb-4 leading-relaxed">
+            {zone.description}
+          </p>
 
-        {/* Mission Preview */}
-        <div className="space-y-2 mb-6">
-          {zone.missions.slice(0, 2).map((mission, index) => (
-            <div key={index} className="flex items-center text-sm text-gray-700">
-              <span className={`w-3 h-3 rounded-full mr-3 ${
-                mission.status === 'live' ? 'bg-green-500' : 'bg-yellow-500'
-              }`}></span>
-              <span>{mission.title}</span>
+          {/* Mission Count */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <span className="text-2xl">🎮</span>
+              <span className="text-gray-800 font-semibold">
+                {liveMissionsCount} Live Mission{liveMissionsCount !== 1 ? 's' : ''}
+              </span>
             </div>
-          ))}
-          {zone.missions.length > 2 && (
-            <div className="text-sm text-gray-500 ml-6">
-              +{zone.missions.length - 2} more mission{zone.missions.length - 2 > 1 ? 's' : ''}
+            <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-semibold">
+              {totalMissionsCount} Total
+            </span>
+          </div>
+
+          {/* Skills Focus */}
+          {zone.skills_focus && zone.skills_focus.length > 0 && (
+            <div className="mb-4">
+              <p className="text-sm font-semibold text-gray-700 mb-2">Skills You'll Learn:</p>
+              <div className="flex flex-wrap gap-2">
+                {zone.skills_focus.slice(0, 3).map((skill, index) => (
+                  <span
+                    key={index}
+                    className={`px-2 py-1 bg-${zone.color}-100 text-${zone.color}-800 rounded text-xs font-semibold capitalize`}
+                  >
+                    {skill.replace('-', ' ')}
+                  </span>
+                ))}
+                {zone.skills_focus.length > 3 && (
+                  <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-semibold">
+                    +{zone.skills_focus.length - 3} more
+                  </span>
+                )}
+              </div>
             </div>
           )}
-        </div>
-        
-        {/* CTA */}
-        <div className="flex items-center text-wl-purple font-bold text-lg group-hover:translate-x-2 transition-transform">
-          Explore Zone
-          <svg className="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-          </svg>
+
+          {/* Explore Button */}
+          <button
+            className={`w-full py-3 bg-gradient-to-r ${zone.gradient} text-white font-bold rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center space-x-2`}
+          >
+            <span>Explore Zone</span>
+            <span>→</span>
+          </button>
         </div>
       </div>
     </Link>

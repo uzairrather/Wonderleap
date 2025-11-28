@@ -27,10 +27,11 @@ const Header = () => {
     { name: 'Students', path: '/students' },
     { name: 'Parents', path: '/parents' },
     { name: 'Zones', path: '/zones' },
+    { name: 'Careers', path: '/careers' }, 
     { name: 'Pricing', path: '/pricing' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
-    { name: 'Help', path: '/help' }
+    // { name: 'Help', path: '/help' }
 
   ];
 
@@ -50,7 +51,8 @@ const Header = () => {
   const authenticatedNavItems = [
     { name: 'Dashboard', path: getDashboardRoute() },
     { name: 'Zones', path: '/zones' },
-    { name: 'Help', path: '/help' }
+    { name: 'Help', path: '/help' },
+     { name: 'Careers', path: '/careers' }
   ];
 
   const navItems = user ? authenticatedNavItems : guestNavItems;

@@ -20,7 +20,7 @@ import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import { ZonesPage } from './pages/OtherPages';
-
+import CareersPage from './pages/CareersPage';
 // Auth Pages
 import SignIn from './components/auth/SignIn';
 import SignUp from './components/auth/SignUp';
@@ -63,7 +63,7 @@ function App() {
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
-
+                <Route path="/careers" element={<CareersPage />} />
                 {/* Protected Dashboard Routes */}
                 <Route 
                   path="/dashboard/teacher" 

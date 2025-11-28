@@ -38,140 +38,249 @@
 //   }
 // };
 
-// Mock authentication - will be replaced with real API calls later
-const MOCK_DELAY = 1000; // Simulate network delay
+// Mock user database (in-memory for testing)
+let mockUsers = [
+  {
+    id: 1,
+    firstName: 'Admin',
+    lastName: 'User',
+    email: 'admin@wonderleap.com',
+    password: 'Admin1234',
+    role: 'admin'
+  },
+  {
+    id: 2,
+    firstName: 'John',
+    lastName: 'Smith',
+    email: 'teacher@school.com',
+    password: 'Teacher123',
+    role: 'teacher',
+    schoolName: 'Demo School'
+  }
+];
 
-// Mock database
-const mockUsers = [];
-
-// Helper to simulate API delay
+// Mock delay to simulate network request
+const MOCK_DELAY = 1000;
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const authService = {
-  // Sign In
-  signIn: async (email, password) => {
+  // Sign Up (Register new user)
+  signUp: async (userData) => {
     await delay(MOCK_DELAY);
-    
-    // Find user
-    const user = mockUsers.find(u => u.email === email);
-    
-    if (!user) {
-      throw {
-        response: {
-          data: { message: 'User not found. Please sign up first.' }
-        }
+
+    const { email, role } = userData;
+
+    // Check if user already exists (for teacher/parent)
+    if (role !== 'student') {
+      const existingUser = mockUsers.find(u => u.email === email);
+      if (existingUser) {
+        throw new Error('Email already registered');
+      }
+    }
+
+    let newUser;
+
+    // Handle different role signups
+    if (role === 'teacher') {
+      newUser = {
+        id: Date.now(),
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        password: userData.password,
+        schoolName: userData.schoolName,
+        role: 'teacher',
+        createdAt: new Date().toISOString()
+      };
+    } else if (role === 'student') {
+      // Student signup with avatar + PIN
+      newUser = {
+        id: Date.now(),
+        classCode: userData.classCode,
+        avatar: userData.avatar,
+        avatarEmoji: userData.avatarEmoji,
+        pin: userData.pin, // In real app, this would be hashed
+        role: 'student',
+        firstName: userData.avatar.charAt(0).toUpperCase() + userData.avatar.slice(1), // Use avatar name as display name
+        createdAt: new Date().toISOString()
+      };
+    } else if (role === 'parent') {
+      newUser = {
+        id: Date.now(),
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        password: userData.password,
+        childCode: userData.childCode || null,
+        role: 'parent',
+        createdAt: new Date().toISOString()
       };
     }
-    
-    if (user.password !== password) {
-      throw {
-        response: {
-          data: { message: 'Incorrect password.' }
-        }
-      };
-    }
-    
+
+    // Add to mock database
+    mockUsers.push(newUser);
+
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
-    
+    const { password, pin, ...userWithoutPassword } = newUser;
+
+    // Generate mock JWT token
+    const token = 'mock-jwt-token-' + newUser.id + '-' + Date.now();
+
     return {
       user: userWithoutPassword,
-      token: 'mock-jwt-token-' + Date.now()
+      token
     };
   },
 
-  // Sign Up
-  signUp: async (userData) => {
+  // Sign In (Login)
+  signIn: async (credentials) => {
     await delay(MOCK_DELAY);
-    
-    // Check if user already exists
-    if (mockUsers.find(u => u.email === userData.email)) {
-      throw {
-        response: {
-          data: { message: 'Email already registered.' }
-        }
-      };
+
+    const { role } = credentials;
+    let user;
+
+    if (role === 'student') {
+      // Student login: classCode + avatar + PIN
+      const { classCode, avatar, pin } = credentials;
+
+      // Find student by class code, avatar, and PIN
+      user = mockUsers.find(
+        u => u.role === 'student' &&
+             u.classCode === classCode &&
+             u.avatar === avatar &&
+             u.pin === pin
+      );
+
+      if (!user) {
+        throw new Error('Invalid class code, avatar, or PIN');
+      }
+    } else {
+      // Teacher/Parent login: email + password
+      const { email, password } = credentials;
+
+      user = mockUsers.find(
+        u => u.email === email &&
+             u.password === password &&
+             u.role === role
+      );
+
+      if (!user) {
+        throw new Error('Invalid email or password');
+      }
     }
-    
-    // Create new user
-    const newUser = {
-      id: Date.now(),
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      email: userData.email,
-      password: userData.password, // In real app, this would be hashed
-      role: userData.role,
-      schoolName: userData.schoolName || null,
-      classCode: userData.classCode || null,
-      createdAt: new Date().toISOString()
-    };
-    
-    // Add to mock database
-    mockUsers.push(newUser);
-    
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = newUser;
-    
+
+    // Remove password/PIN from response
+    const { password, pin, ...userWithoutPassword } = user;
+
+    // Generate mock JWT token
+    const token = 'mock-jwt-token-' + user.id + '-' + Date.now();
+
     return {
       user: userWithoutPassword,
-      token: 'mock-jwt-token-' + Date.now()
+      token
     };
   },
 
   // Forgot Password
   forgotPassword: async (email) => {
     await delay(MOCK_DELAY);
-    
+
     const user = mockUsers.find(u => u.email === email);
-    
+
     if (!user) {
-      throw {
-        response: {
-          data: { message: 'No account found with this email.' }
-        }
+      throw new Error('Email not found');
+    }
+
+    // Simulate sending password reset email
+    console.log(`Password reset email sent to: ${email}`);
+
+    return {
+      message: 'Password reset email sent! Check your inbox.'
+    };
+  },
+
+  // Get Current User (from localStorage)
+  getCurrentUser: () => {
+    const userStr = localStorage.getItem('wonderleap_user');
+    return userStr ? JSON.parse(userStr) : null;
+  },
+
+  // Get Token (from localStorage)
+  getToken: () => {
+    return localStorage.getItem('wonderleap_token');
+  },
+
+  // Logout
+  logout: () => {
+    localStorage.removeItem('wonderleap_user');
+    localStorage.removeItem('wonderleap_token');
+  },
+
+  // Validate class code (for student signup/login)
+  validateClassCode: async (classCode) => {
+    await delay(500);
+
+    // Mock validation - accept any 6-character code
+    if (classCode.length === 6) {
+      return {
+        valid: true,
+        className: 'Demo Class 4B',
+        teacherName: 'Mrs. Smith'
       };
     }
-    
+
     return {
-      message: 'Password reset email sent successfully!'
+      valid: false,
+      message: 'Invalid class code'
     };
   },
 
-  // Reset Password
-  resetPassword: async (token, newPassword) => {
-    await delay(MOCK_DELAY);
-    
-    return {
-      message: 'Password reset successful!'
-    };
+  // Get available avatars for a class
+  getClassAvatars: async (classCode) => {
+    await delay(500);
+
+    // Get all students in this class
+    const studentsInClass = mockUsers.filter(
+      u => u.role === 'student' && u.classCode === classCode
+    );
+
+    // Return avatars that are already taken
+    const takenAvatars = studentsInClass.map(s => s.avatar);
+
+    // Mock: return some avatars as examples
+    const allAvatars = [
+      { id: 'dog', emoji: '🐶', name: 'Dog' },
+      { id: 'cat', emoji: '🐱', name: 'Cat' },
+      { id: 'lion', emoji: '🦁', name: 'Lion' },
+      { id: 'elephant', emoji: '🐘', name: 'Elephant' },
+      { id: 'panda', emoji: '🐼', name: 'Panda' },
+      { id: 'tiger', emoji: '🐯', name: 'Tiger' },
+      { id: 'bear', emoji: '🐻', name: 'Bear' },
+      { id: 'monkey', emoji: '🐵', name: 'Monkey' }
+    ];
+
+    return allAvatars.map(avatar => ({
+      ...avatar,
+      available: !takenAvatars.includes(avatar.id)
+    }));
   },
 
-  // Verify Email
-  verifyEmail: async (token) => {
-    await delay(MOCK_DELAY);
-    
-    return {
-      message: 'Email verified successfully!'
-    };
-  },
+  // Check if avatar is available in class
+  checkAvatarAvailability: async (classCode, avatarId) => {
+    await delay(300);
 
-  // Get Current User
-  getCurrentUser: async () => {
-    await delay(MOCK_DELAY);
-    
-    const userData = localStorage.getItem('wonderleap_user');
-    if (!userData) {
-      throw {
-        response: {
-          status: 401,
-          data: { message: 'Not authenticated' }
-        }
-      };
-    }
-    
-    return JSON.parse(userData);
+    const isUsed = mockUsers.some(
+      u => u.role === 'student' &&
+           u.classCode === classCode &&
+           u.avatar === avatarId
+    );
+
+    return !isUsed;
   }
 };
+
+export default authService;
+
 // ```
 
 // ---

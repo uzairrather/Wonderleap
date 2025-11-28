@@ -1,163 +1,130 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { zonesData } from '../utils/zonesData';
+import { zonesData, getMissionsByZone } from '../utils/zonesData';
 import MissionCard from '../components/zones/MissionCard';
+import Button from '../components/common/Button';
 
 const ZoneDetailPage = () => {
   const { zoneId } = useParams();
-  const zone = zonesData.find(z => z.id === parseInt(zoneId));
-  const [keyStageFilter, setKeyStageFilter] = useState('all');
+  
+  // Get zone and missions
+  const zone = zonesData.find(z => z.id === zoneId);
+  const zoneMissions = getMissionsByZone(zoneId);
 
+  // If zone not found
   if (!zone) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Zone Not Found</h1>
-          <Link to="/zones" className="text-wl-purple hover:underline">
-            ← Back to Zones
+          <div className="text-6xl mb-4">🤔</div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">Zone Not Found</h2>
+          <Link to="/zones">
+            <Button variant="primary">Back to Zones</Button>
           </Link>
         </div>
       </div>
     );
   }
 
-  const filteredMissions = keyStageFilter === 'all' 
-    ? zone.missions 
-    : zone.missions.filter(m => m.keyStage === keyStageFilter);
-
   return (
-    <div className="min-h-screen">
-      {/* Zone Hero */}
-      <section className={`relative bg-gradient-to-br ${zone.color} overflow-hidden`}>
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full filter blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-white rounded-full filter blur-3xl"></div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
 
-        <div className="relative py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Back Button */}
-            <Link
-              to="/zones"
-              className="inline-flex items-center text-white/80 hover:text-white mb-8 transition"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Back to All Zones
-            </Link>
-
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-              {/* Zone Icon */}
-              <div className="text-9xl animate-float">
-                {zone.emoji}
-              </div>
-
-              {/* Zone Info */}
-              <div className="text-white flex-1 text-center md:text-left">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-4">
-                  {zone.name}
-                </h1>
-                <p className="text-xl md:text-2xl text-white/90 mb-6 max-w-3xl">
-                  {zone.description}
-                </p>
-                
-                {/* Stats */}
-                <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                  <div className="bg-white/20 backdrop-blur-sm rounded-xl px-6 py-3">
-                    <div className="text-3xl font-bold">{zone.missions.length}</div>
-                    <div className="text-sm text-white/80">Total Missions</div>
-                  </div>
-                  <div className="bg-white/20 backdrop-blur-sm rounded-xl px-6 py-3">
-                    <div className="text-3xl font-bold">
-                      {zone.missions.filter(m => m.status === 'live').length}
-                    </div>
-                    <div className="text-sm text-white/80">Live Now</div>
-                  </div>
-                  <div className="bg-white/20 backdrop-blur-sm rounded-xl px-6 py-3">
-                    <div className="text-3xl font-bold">
-                      {zone.missions.filter(m => m.status === 'coming-soon').length}
-                    </div>
-                    <div className="text-sm text-white/80">Coming Soon</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Wave */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 0L60 10C120 20 240 40 360 46.7C480 53 600 47 720 43.3C840 40 960 40 1080 46.7C1200 53 1320 67 1380 73.3L1440 80V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0V0Z" fill="white"/>
-          </svg>
-        </div>
-      </section>
-
-      {/* Missions Section */}
-      <section className="py-20 bg-white">
+      <main className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header with Filter */}
-          <div className="flex flex-col md:flex-row justify-between items-center mb-12">
-            <h2 className="text-4xl font-display font-bold text-gray-900 mb-4 md:mb-0">
-              Missions in This Zone
-            </h2>
+          {/* Back Button */}
+          <Link to="/zones" className="inline-flex items-center text-gray-600 hover:text-gray-800 mb-6">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to All Zones
+          </Link>
 
-            {/* Key Stage Filter */}
-            <div className="inline-flex bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setKeyStageFilter('all')}
-                className={`px-6 py-2 rounded-lg font-semibold transition ${
-                  keyStageFilter === 'all'
-                    ? 'bg-white text-gray-900 shadow'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                All Missions
-              </button>
-              <button
-                onClick={() => setKeyStageFilter('KS1')}
-                className={`px-6 py-2 rounded-lg font-semibold transition ${
-                  keyStageFilter === 'KS1'
-                    ? 'bg-white text-gray-900 shadow'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                KS1
-              </button>
-              <button
-                onClick={() => setKeyStageFilter('KS2')}
-                className={`px-6 py-2 rounded-lg font-semibold transition ${
-                  keyStageFilter === 'KS2'
-                    ? 'bg-white text-gray-900 shadow'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                KS2
-              </button>
-            </div>
-          </div>
-
-          {/* Missions Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredMissions.map((mission) => (
-              <MissionCard
-                key={mission.id}
-                mission={mission}
-                zoneColor={zone.color}
-              />
-            ))}
-          </div>
-
-          {filteredMissions.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-xl text-gray-600">
-                No missions available for {keyStageFilter}
+          {/* Zone Header */}
+          <div className={`bg-gradient-to-r ${zone.gradient} rounded-2xl p-8 md:p-12 text-white mb-12 shadow-2xl`}>
+            <div className="text-center">
+              <div className="text-8xl mb-4 animate-bounce-slow">{zone.emoji}</div>
+              <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">
+                {zone.name}
+              </h1>
+              <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto">
+                {zone.description}
               </p>
             </div>
+          </div>
+
+          {/* Skills Focus Section */}
+          {zone.skills_focus && zone.skills_focus.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">🎯 Skills You'll Develop</h2>
+              <div className="flex flex-wrap gap-3">
+                {zone.skills_focus.map((skill, index) => (
+                  <span
+                    key={index}
+                    className={`px-4 py-2 bg-${zone.color}-100 text-${zone.color}-800 rounded-lg font-semibold capitalize`}
+                  >
+                    ⭐ {skill.replace('-', ' ')}
+                  </span>
+                ))}
+              </div>
+            </div>
           )}
+
+          {/* Missions Section */}
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-3xl font-bold text-gray-800">
+                🎮 Missions in This Zone
+              </h2>
+              <span className="text-gray-600 font-semibold">
+                {zoneMissions.length} Mission{zoneMissions.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+
+            {zoneMissions.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {zoneMissions.map((mission) => (
+                  <MissionCard
+                    key={mission.id}
+                    mission={mission}
+                    zone={zone}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-white rounded-xl shadow-lg">
+                <div className="text-6xl mb-4">🚧</div>
+                <h3 className="text-2xl font-bold text-gray-700 mb-2">
+                  Missions Coming Soon!
+                </h3>
+                <p className="text-gray-600">
+                  We're working hard to create amazing missions for this zone.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Call to Action */}
+          <div className="bg-gradient-to-r from-teal-500 to-purple-600 rounded-2xl p-8 md:p-12 text-white text-center shadow-2xl">
+            <h2 className="text-3xl font-bold mb-4">Ready to Start Your Adventure?</h2>
+            <p className="text-xl mb-6 text-white/90">
+              Explore more zones and discover exciting careers!
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/zones">
+                <Button variant="secondary" size="lg">
+                  Explore All Zones
+                </Button>
+              </Link>
+              <Link to="/careers">
+                <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-purple-600">
+                  Discover Careers
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
-      </section>
+      </main>
+
     </div>
   );
 };
